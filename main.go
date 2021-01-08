@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sqooba/go-common/healthchecks"
 	"github.com/sqooba/go-common/logging"
@@ -82,7 +81,7 @@ func main() {
 	server := &http.Server{
 		// We listen on port 8443 such that we do not need root privileges or extra capabilities for this server.
 		// The Service object will take care of mapping this port to the HTTPS port 443.
-		Addr:    fmt.Sprintf(":%s", env.Port),
+		Addr:    ":" + env.Port,
 		Handler: mux,
 	}
 

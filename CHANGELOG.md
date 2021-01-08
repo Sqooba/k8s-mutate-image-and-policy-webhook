@@ -1,7 +1,7 @@
 k8s-mutate-image-and-policy
 ====
 
-# Version 3.1.0 -- 08.12.2021
+# Version v3.1.0 -- 08.12.2021
 
 ## Enhancement
 

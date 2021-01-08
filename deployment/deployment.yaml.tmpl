@@ -36,7 +36,7 @@ spec:
 #              topologyKey: topology.kubernetes.io/zone # uncomment to ensure HA at zone level
       containers:
       - name: webhook
-        image: docker.sqooba.io/sqooba/k8s-mutate-image-and-policy-webhook:3
+        image: docker.sqooba.io/sqooba/k8s-mutate-image-and-policy-webhook:v3
         ports:
         - containerPort: 8443
           name: webhook-api
