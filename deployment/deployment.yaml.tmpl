@@ -1,0 +1,121 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: ${NAMESPACE}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-mutate-image-and-policy-webhook
+  namespace: ${NAMESPACE}
+  labels:
+    app: k8s-mutate-image-and-policy-webhook
+spec:
+  replicas: 2
+#  updateStrategy:
+#    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: k8s-mutate-image-and-policy-webhook
+  template:
+    metadata:
+      labels:
+        app: k8s-mutate-image-and-policy-webhook
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - k8s-mutate-image-and-policy-webhook
+              topologyKey: kubernetes.io/hostname
+#              topologyKey: topology.kubernetes.io/zone # uncomment to ensure HA at zone level
+      containers:
+      - name: webhook
+        image: docker.sqooba.io/sqooba/k8s-mutate-image-and-policy-webhook:3
+        ports:
+        - containerPort: 8443
+          name: webhook-api
+        volumeMounts:
+        - name: webhook-tls-certs
+          mountPath: /run/secrets/tls
+          readOnly: true
+        env:
+          - name: TLS_CERT_FILE
+            value: /run/secrets/tls/webhook-server-tls.crt
+          - name: TLS_KEY_FILE
+            value: /run/secrets/tls/webhook-server-tls.key
+          - name: PORT
+            value: "8443"
+          - name: REGISTRY
+            value: "docker.sqooba.io"
+# Optional, don't set any value if you don't want to rewrite the imagePullSecrets property.
+#          - name: IMAGE_PULL_SECRET
+#            value: "sqooba-registry"
+# Optional, force imagePullPolicy to Always
+#          - name: FORCE_IMAGE_PULL_POLICY
+#            value: "true"
+# Optional, exclude mutate on given namespaces (comma separated)
+#          - name: EXCLUDE_NAMESPACES
+#            value: "kube-system,kube-public"
+# Optional, add more verbosity to the logs
+#          - name: VERBOSE
+#            value: "true"
+# Optional, add even more verbosity to the logs, like input and output payloads.
+#          - name: TRACE
+#            value: "true"
+      volumes:
+      - name: webhook-tls-certs
+        secret:
+          secretName: k8s-mutate-image-and-policy-webhook-tls-certs
+# Configure the imagePullSecrets to the appropriate value.
+      imagePullSecrets:
+      - name: sqooba-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-mutate-image-and-policy-webhook
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: k8s-mutate-image-and-policy-webhook
+  ports:
+    - port: 443
+      targetPort: webhook-api
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: k8s-mutate-image-and-policy-webhook
+webhooks:
+  - name: k8s-mutate-image-and-policy-webhook.${NAMESPACE}.svc
+    clientConfig:
+      service:
+        name: k8s-mutate-image-and-policy-webhook
+        namespace: ${NAMESPACE}
+        path: "/mutate"
+      caBundle: ${CA_PEM_B64}
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    rules:
+      - operations: [ "CREATE", "UPDATE" ]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources:
+          - pods
+#          - persistentvolumeclaims
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: k8s-mutate-image-and-policy-webhook-pdb
+spec:
+  selector:
+    matchLabels:
+      app: k8s-mutate-image-and-policy-webhook
+  maxUnavailable: 1
