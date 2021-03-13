@@ -62,12 +62,9 @@ spec:
 # Optional, exclude mutate on given namespaces (comma separated)
 #          - name: EXCLUDE_NAMESPACES
 #            value: "kube-system,kube-public"
-# Optional, add more verbosity to the logs
-#          - name: VERBOSE
-#            value: "true"
-# Optional, add even more verbosity to the logs, like input and output payloads.
-#          - name: TRACE
-#            value: "true"
+# Optional, define log level, defaults to info
+#          - name: LOG_LEVEL
+#            value: "info"
       volumes:
       - name: webhook-tls-certs
         secret:

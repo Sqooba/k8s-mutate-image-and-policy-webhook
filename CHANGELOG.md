@@ -1,7 +1,15 @@
 k8s-mutate-image-and-policy
 ====
 
-# Version v3.1.0 -- 08.12.2021
+# Version v3.2.0 -- 12.03.2021
+
+## Enhancement
+
+- Set subjecAltname in the certificat (k8s 1.20, go 1.15)
+- Set default TLS_CERT_FILE and TLS_KET_FILE
+- Bump sqooba/go-common version
+
+# Version v3.1.0 -- 08.12.2020
 
 ## Enhancement
 

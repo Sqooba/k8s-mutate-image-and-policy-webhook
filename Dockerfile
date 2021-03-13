@@ -1,8 +1,6 @@
 FROM gcr.io/distroless/base
 
-ARG arch=amd64
-
-COPY k8s-mutate-image-and-policy-webhook-${arch} /k8s-mutate-image-and-policy-webhook
+COPY k8s-mutate-image-and-policy-webhook /k8s-mutate-image-and-policy-webhook
 
 USER nobody
 

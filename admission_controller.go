@@ -13,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-
 )
 
 const (
@@ -22,17 +21,17 @@ const (
 
 var (
 	groupVersion = schema.GroupVersion{
-		Group: "admission.k8s.io",
+		Group:   "admission.k8s.io",
 		Version: "v1",
 	}
-	scheme = runtime.NewScheme()
-	codecFactory = serializer.NewCodecFactory(scheme)
+	scheme                = runtime.NewScheme()
+	codecFactory          = serializer.NewCodecFactory(scheme)
 	universalDeserializer = codecFactory.UniversalDeserializer()
-	jsonSerializer = json.NewSerializerWithOptions(
+	jsonSerializer        = json.NewSerializerWithOptions(
 		json.DefaultMetaFactory, scheme, scheme,
 		json.SerializerOptions{Yaml: false, Pretty: false, Strict: true},
 	)
-	encoder = codecFactory.EncoderForVersion(jsonSerializer, groupVersion)
+	encoder   = codecFactory.EncoderForVersion(jsonSerializer, groupVersion)
 	patchType = admissionv1.PatchTypeJSONPatch
 )
 
@@ -93,7 +92,7 @@ func (wh *mutationWH) doServeAdmitFunc(w http.ResponseWriter, r *http.Request, a
 		admissionReviewResponse.Response.Allowed = false
 		admissionReviewResponse.Response.Result = &metav1.Status{
 			Message: fmt.Sprintf("Got an error while deserializing the request: %s", err.Error()),
-			Reason: metav1.StatusReasonBadRequest,
+			Reason:  metav1.StatusReasonBadRequest,
 		}
 		//return nil, fmt.Errorf("k8s-mutate-image-and-policy-webhook: could not deserialize request: %v", err)
 	} else if admissionReviewReq.Request == nil {
@@ -102,7 +101,7 @@ func (wh *mutationWH) doServeAdmitFunc(w http.ResponseWriter, r *http.Request, a
 		admissionReviewResponse.Response.Allowed = false
 		admissionReviewResponse.Response.Result = &metav1.Status{
 			Message: "Deserializing the request produced a empty review",
-			Reason: metav1.StatusReasonInvalid,
+			Reason:  metav1.StatusReasonInvalid,
 		}
 		//return admissionReviewResponse, errors.New("k8s-mutate-image-and-policy-webhook: malformed admission review: request is nil")
 	} else {
@@ -124,7 +123,7 @@ func (wh *mutationWH) doServeAdmitFunc(w http.ResponseWriter, r *http.Request, a
 			admissionReviewResponse.Response.Allowed = false
 			admissionReviewResponse.Response.Result = &metav1.Status{
 				Message: err.Error(),
-				Reason: metav1.StatusReasonBadRequest,
+				Reason:  metav1.StatusReasonBadRequest,
 			}
 		} else {
 			// Otherwise, encode the patch operations to JSON and return a positive response.
@@ -134,7 +133,7 @@ func (wh *mutationWH) doServeAdmitFunc(w http.ResponseWriter, r *http.Request, a
 				admissionReviewResponse.Response.Allowed = false
 				admissionReviewResponse.Response.Result = &metav1.Status{
 					Message: err.Error(),
-					Reason: metav1.StatusReasonInternalError,
+					Reason:  metav1.StatusReasonInternalError,
 				}
 			} else {
 				admissionReviewResponse.Response.Allowed = true
@@ -181,4 +180,3 @@ func (wh *mutationWH) admitFuncHandler(admit admitFunc) http.Handler {
 		wh.serveAdmitFunc(w, r, admit)
 	})
 }
-

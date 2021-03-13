@@ -10,8 +10,8 @@ import (
 )
 
 type envConfig struct {
-	TLSCertFile          string   `envconfig:"TLS_CERT_FILE"`
-	TLSKeyFile           string   `envconfig:"TLS_KEY_FILE"`
+	TLSCertFile          string   `envconfig:"TLS_CERT_FILE" default:"/run/secrets/tls/webhook-server-tls.crt"`
+	TLSKeyFile           string   `envconfig:"TLS_KEY_FILE" default:"/run/secrets/tls/webhook-server-tls.key"`
 	Port                 string   `envconfig:"PORT" default:"8443"`
 	LogLevel             string   `envconfig:"LOG_LEVEL" default:"info"`
 	Registry             string   `envconfig:"REGISTRY"`

@@ -11,9 +11,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sqooba/go-common/healthchecks v0.0.0-00010101000000-000000000000
-	github.com/sqooba/go-common/logging v0.0.0-00010101000000-000000000000
-	github.com/sqooba/go-common/version v0.0.0-00010101000000-000000000000
+	github.com/sqooba/go-common v0.0.0-20210312063917-35b2ebfb97ab
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/text v0.3.3 // indirect
@@ -24,10 +22,4 @@ require (
 	k8s.io/apimachinery v0.17.9
 	k8s.io/klog v1.0.0 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
-)
-
-replace (
-	github.com/sqooba/go-common/healthchecks => ../sqooba-go-common/healthchecks
-	github.com/sqooba/go-common/logging => ../sqooba-go-common/logging
-	github.com/sqooba/go-common/version => ../sqooba-go-common/version
 )
