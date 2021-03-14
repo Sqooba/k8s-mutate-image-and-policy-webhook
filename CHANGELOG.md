@@ -1,6 +1,12 @@
 k8s-mutate-image-and-policy
 ====
 
+# Version v3.2.1 -- 14.03.2021
+
+## Enhancement
+
+- Bump/clean/purge dependencies
+
 # Version v3.2.0 -- 12.03.2021
 
 ## Enhancement
