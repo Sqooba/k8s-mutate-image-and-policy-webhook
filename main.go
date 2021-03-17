@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/sqooba/go-common/healthchecks"
 	"github.com/sqooba/go-common/logging"
 	"github.com/sqooba/go-common/version"
 	"net/http"
@@ -22,7 +21,6 @@ type envConfig struct {
 }
 
 var (
-	healthCheck = flag.Bool("health-check", false, "Run health-check")
 	setLogLevel = flag.String("set-log-level", "", "Change log level. Possible values are trace,debug,info,warn,error,fatal,panic")
 	log         = logging.NewLogger()
 )
@@ -53,18 +51,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Logging level %s do not seem to be right. Err = %v", env.LogLevel, err)
 	}
-
-	if *setLogLevel != "" {
-		logging.SetRemoteLogLevelAndExit(log, env.Port, *setLogLevel)
-	}
-
-	// Running health check (so that it can be the same binary in the containers
-	if *healthCheck {
-		healthchecks.RunHealthCheckAndExit(env.Port)
-	}
-
-	// Special endpoint to change the verbosity at runtime, i.e. curl -X PUT --data debug ...
-	logging.InitVerbosityHandler(log, http.DefaultServeMux)
 
 	wh := mutationWH{
 		registry:             env.Registry,

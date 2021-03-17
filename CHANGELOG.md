@@ -1,6 +1,12 @@
 k8s-mutate-image-and-policy
 ====
 
+# Version v3.2.2 -- XXX
+
+## Other
+
+- Code simplification (healthcheck has been removed, since it's not working with https...)
+
 # Version v3.2.1 -- 14.03.2021
 
 ## Enhancement
