@@ -27,9 +27,9 @@ lint:
 
 build:
 	GOOS=${GOOS} $(GOBUILD) \
-		-ldflags "-X version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} \
-				  -X version.BuildDate=${BUILD_DATE} \
-				  -X version.Version=${VERSION}" \
+		-ldflags "-X github.com/sqooba/go-common/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} \
+			-X github.com/sqooba/go-common/version.BuildDate=${BUILD_DATE} \
+			-X github.com/sqooba/go-common/version.Version=${VERSION}" \
 		-o ${BINARY_NAME} .
 
 package:

@@ -44,13 +44,14 @@ default pull policy to `Always` instead of `IfNotPresent`).
 In the `deployment.yaml` file generated via the provided command (details below),
 few environment variables drive the configuration:
 
-- `REGISTRY`: If set, tells which registry to force, such as `docker.sqooba.io`
-- `IMAGE_PULL_SECRET`: if set, tells which `imagePullSecrets` to inject in the Pod. Note the secret must be present in the namespace, and this task is out of this webhook responsibility.
-- `FORCE_IMAGE_PULL_POLICY`: if set to true, `imagePullPolicy` will be forced to `Always`
-- `DEFAULT_STORAGE_CLASS`: if set, enforce storage class of PVCs to the value, such as `rook-ceph-block`,
-  if no other storage class is set.
-- `EXCLUDE_NAMESPACES`: an optional list, comma separated, of namespace(s) to exclude, for instance "kube-system,default". To keep the behavior backward compatible, set this value to "kube-system,kube-public"
-- `LOG_LEVEL`: this option lets you define a logging verbosity between trace, debug, info (the default), warn, error or fatal.
+| Environment variable | Default | Description |
+|----------------------|---------|-------------|
+| `REGISTRY`           | | If set, tells which registry to force, such as `docker.sqooba.io` |
+| `IMAGE_PULL_SECRET`  | | If set, tells which `imagePullSecrets` to inject in the Pod. Note the secret must be present in the namespace, and this task is out of this webhook responsibility. |
+| `FORCE_IMAGE_PULL_POLICY` | | If set to true, `imagePullPolicy` will be forced to `Always` |
+| `DEFAULT_STORAGE_CLASS` | | If set, enforce storage class of PVCs to the value, such as `rook-ceph-block`, if no other storage class is set. |
+| `EXCLUDE_NAMESPACES` | | oOptional list, comma separated, of namespace(s) to exclude, for instance "kube-system,default". To keep the behavior backward compatible, set this value to `kube-system,kube-public` |
+| `LOG_LEVEL` | `info` | This option lets you define a logging verbosity between trace, debug, info (the default), warn, error or fatal. |
 
 # Image registry heuristic
 
@@ -145,21 +146,27 @@ make all
 - https://github.com/open-policy-agent/gatekeeper
 - https://github.com/giantswarm/grumpy/blob/instance_migration/grumpy.go
 
-# Upgrade
+# FAQ
+
+## Upgrade
 
 Updating a minor version of the webhook
 
 ```
 kubectl -n kube-system set \
     image deploy/k8s-mutate-image-and-policy-webhook \
-    webhook=docker.sqooba.io/sqooba/k8s-mutate-image-and-policy-webhook:3.0.0
+    webhook=sqooba/k8s-mutate-image-and-policy-webhook:3.2.2
 ```
+
+# Restart
 
 Restarting the webhook
 
 ```
 kubectl -n kube-system rollout restart deploy/k8s-mutate-image-and-policy-webhook
 ```
+
+# Disable
 
 In case of any problem, delete the mutation webhook, fix, and re-add.
 

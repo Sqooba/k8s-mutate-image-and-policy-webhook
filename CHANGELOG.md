@@ -1,7 +1,11 @@
 k8s-mutate-image-and-policy
 ====
 
-# Version v3.2.2 -- XXX
+# Version v3.2.2 -- 27.05.2021
+
+## Fix
+
+- Insert git hash, build date and version at build time
 
 ## Other
 
