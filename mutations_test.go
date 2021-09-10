@@ -310,6 +310,140 @@ func TestImageSkaffold(t *testing.T) {
 	assert.Equal(t, "docker.sqooba.io/sqooba/sqooba-website:32cbc804-dirty@sha256:a4a729d8691ed70eb56cf03053333cf42e8a6c33f6ee67ea862da4459d7f70fd", patches[0].Value)
 }
 
+func TestImageInternalFullRegistry(t *testing.T) {
+
+	wh := mutationWH{
+		registry: "docker.sqooba.io/public-docker-virtual",
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Image: "docker.sqooba.io/local-repo/xyz/image:snapshot"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "replace", patches[0].Op)
+	assert.Equal(t, "/spec/containers/0/image", patches[0].Path)
+	// actual behaviour if the registry docker.sqooba.io/local-repo is not ignored
+	assert.Equal(t, "docker.sqooba.io/public-docker-virtual/local-repo/xyz/image:snapshot", patches[0].Value)
+}
+
+func TestImageInternalFullRegistryWithIgnoreNoReplace(t *testing.T) {
+
+	wh := mutationWH{
+		registry:          "docker.sqooba.io/public-docker-virtual",
+		ignoredRegistries: []string{"docker.sqooba.io/local-repo", "ignoreme.io/local"},
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Image: "docker.sqooba.io/local-repo/xyz/image:snapshot"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(patches))
+}
+
+func TestImageInternalFullRegistryWithIgnoreReplace1(t *testing.T) {
+
+	wh := mutationWH{
+		registry:          "docker.sqooba.io/public-docker-virtual",
+		ignoredRegistries: []string{"docker.sqooba.io/local-repo", "ignoreme.io/local"},
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Image: "docker.sqooba.io/local-repo-2/xyz/image:snapshot"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "replace", patches[0].Op)
+	assert.Equal(t, "/spec/containers/0/image", patches[0].Path)
+	assert.Equal(t, "docker.sqooba.io/public-docker-virtual/local-repo-2/xyz/image:snapshot", patches[0].Value)
+}
+
+func TestImageInternalFullRegistryWithIgnoreReplace2(t *testing.T) {
+
+	wh := mutationWH{
+		registry:          "docker.sqooba.io/public-docker-virtual",
+		ignoredRegistries: []string{"docker.sqooba.io/local-repo", "ignoreme.io/local"},
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Image: "any.registry.io/whatever/xyz/image:snapshot"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "replace", patches[0].Op)
+	assert.Equal(t, "/spec/containers/0/image", patches[0].Path)
+	assert.Equal(t, "docker.sqooba.io/public-docker-virtual/whatever/xyz/image:snapshot", patches[0].Value)
+}
+
+func TestImageExternal(t *testing.T) {
+
+	wh := mutationWH{
+		registry: "docker.sqooba.io/public-docker-virtual",
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Image: "quay.io/argoproj/argocd:v2.0.1"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "replace", patches[0].Op)
+	assert.Equal(t, "/spec/containers/0/image", patches[0].Path)
+	assert.Equal(t, "docker.sqooba.io/public-docker-virtual/argoproj/argocd:v2.0.1", patches[0].Value)
+}
+
+func TestImageExternalPathPrefixShortImage(t *testing.T) {
+	logging.SetLogLevel(log, "trace")
+
+	wh := mutationWH{
+		registry: "docker.sqooba.io/public-docker-virtual",
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{Image: "victoriametrics/victoria-metrics:v1.40.0"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "replace", patches[0].Op)
+	assert.Equal(t, "/spec/containers/0/image", patches[0].Path)
+	assert.Equal(t, "docker.sqooba.io/public-docker-virtual/victoriametrics/victoria-metrics:v1.40.0", patches[0].Value)
+}
+
 func TestImagePullSecretNotPresent(t *testing.T) {
 	logging.SetLogLevel(log, "debug")
 

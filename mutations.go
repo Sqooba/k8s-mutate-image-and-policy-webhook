@@ -56,7 +56,8 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 		if pod.Spec.InitContainers != nil {
 			for i, c := range pod.Spec.InitContainers {
 				log.Tracef("/spec/initContainers/%d/image = %s", i, c.Image)
-				if !containsRegistry(c.Image, wh.registry) {
+
+				if !containsAnyRegistry(c.Image, append(wh.ignoredRegistries, wh.registry)) {
 					patches = append(patches, patchOperation{
 						Op:    "replace",
 						Path:  fmt.Sprintf("/spec/initContainers/%d/image", i),
@@ -69,7 +70,8 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 		if pod.Spec.Containers != nil {
 			for i, c := range pod.Spec.Containers {
 				log.Tracef("/spec/containers/%d/image = %s", i, c.Image)
-				if !containsRegistry(c.Image, wh.registry) {
+
+				if !containsAnyRegistry(c.Image, append(wh.ignoredRegistries, wh.registry)) {
 					patches = append(patches, patchOperation{
 						Op:    "replace",
 						Path:  fmt.Sprintf("/spec/containers/%d/image", i),
@@ -193,4 +195,13 @@ func (wh *mutationWH) applyMutationOnPvc(pvc corev1.PersistentVolumeClaim) ([]pa
 // the registry is not only a prefix of the image.
 func containsRegistry(image string, registry string) bool {
 	return strings.HasPrefix(image, registry+"/")
+}
+
+func containsAnyRegistry(image string, registries []string) bool {
+	for _, s := range registries {
+		if containsRegistry(image, s) {
+			return true
+		}
+	}
+	return false
 }
