@@ -18,6 +18,7 @@ type envConfig struct {
 	ForceImagePullPolicy bool     `envconfig:"FORCE_IMAGE_PULL_POLICY"`
 	DefaultStorageClass  string   `envconfig:"DEFAULT_STORAGE_CLASS"`
 	ExcludeNamespaces    []string `envconfig:"EXCLUDE_NAMESPACES"`
+	IgnoredRegistries    []string `envconfig:"IGNORED_REGISTRIES"`
 }
 
 var (
@@ -31,6 +32,7 @@ type mutationWH struct {
 	forceImagePullPolicy bool
 	defaultStorageClass  string
 	excludedNamespaces   []string
+	ignoredRegistries    []string
 }
 
 func main() {
@@ -58,6 +60,7 @@ func main() {
 		forceImagePullPolicy: env.ForceImagePullPolicy,
 		defaultStorageClass:  env.DefaultStorageClass,
 		excludedNamespaces:   env.ExcludeNamespaces,
+		ignoredRegistries:    env.IgnoredRegistries,
 	}
 
 	mux := http.NewServeMux()

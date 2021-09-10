@@ -65,6 +65,9 @@ spec:
 # Optional, define log level, defaults to info
 #          - name: LOG_LEVEL
 #            value: "info"
+# Optional, define the registries that should be ignored by the webhook while processing the containers images, defaults to empty value
+#          - name: IGNORED_REGISTRIES
+#            value: ""
       volumes:
       - name: webhook-tls-certs
         secret:

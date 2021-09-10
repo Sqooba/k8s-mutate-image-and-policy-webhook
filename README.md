@@ -50,7 +50,8 @@ few environment variables drive the configuration:
 | `IMAGE_PULL_SECRET`  | | If set, tells which `imagePullSecrets` to inject in the Pod. Note the secret must be present in the namespace, and this task is out of this webhook responsibility. |
 | `FORCE_IMAGE_PULL_POLICY` | | If set to true, `imagePullPolicy` will be forced to `Always` |
 | `DEFAULT_STORAGE_CLASS` | | If set, enforce storage class of PVCs to the value, such as `rook-ceph-block`, if no other storage class is set. |
-| `EXCLUDE_NAMESPACES` | | oOptional list, comma separated, of namespace(s) to exclude, for instance "kube-system,default". To keep the behavior backward compatible, set this value to `kube-system,kube-public` |
+| `EXCLUDE_NAMESPACES` | | Optional list, comma separated, of namespace(s) to exclude, for instance "kube-system,default". To keep the behavior backward compatible, set this value to `kube-system,kube-public` |
+| `IGNORE_REGISTRIES` | | Optional list, comma separated, of registries that should be ignored by the webhook (besides the one specified via the REGISTRY parameter)
 | `LOG_LEVEL` | `info` | This option lets you define a logging verbosity between trace, debug, info (the default), warn, error or fatal. |
 
 # Image registry heuristic
