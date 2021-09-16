@@ -1,6 +1,13 @@
 k8s-mutate-image-and-policy
 ====
 
+# Version v3.3.0 -- 16.09.2021
+
+## Enhancement
+
+- Add `IGNORE_REGISTRIES` option
+- Build multi-arch image
+
 # Version v3.2.2 -- 27.05.2021
 
 ## Fix
