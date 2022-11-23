@@ -1,6 +1,12 @@
 k8s-mutate-image-and-policy
 ====
 
+# Version v3.3.1 -- 23.11.2021
+
+## Other
+
+- Build image via Github workflow
+
 # Version v3.3.0 -- 16.09.2021
 
 ## Enhancement
