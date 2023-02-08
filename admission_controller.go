@@ -4,7 +4,7 @@ import (
 	"bytes"
 	simplejson "encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	admissionv1 "k8s.io/api/admission/v1"
@@ -67,7 +67,7 @@ func (wh *mutationWH) doServeAdmitFunc(w http.ResponseWriter, r *http.Request, a
 		return nil, fmt.Errorf("k8s-mutate-image-and-policy-webhook: invalid method %s, only POST requests are allowed", r.Method)
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return nil, fmt.Errorf("k8s-mutate-image-and-policy-webhook: could not read request body: %v", err)
@@ -149,7 +149,7 @@ func (wh *mutationWH) doServeAdmitFunc(w http.ResponseWriter, r *http.Request, a
 
 // serveAdmitFunc is a wrapper around doServeAdmitFunc that adds error handling and logging.
 func (wh *mutationWH) serveAdmitFunc(w http.ResponseWriter, r *http.Request, admit admitFunc) {
-	log.Print("Webhook request starts...")
+	log.Tracef("Webhook request starts...")
 
 	var writeErr error
 	if object, err := wh.doServeAdmitFunc(w, r, admit); err != nil {
@@ -167,7 +167,7 @@ func (wh *mutationWH) serveAdmitFunc(w http.ResponseWriter, r *http.Request, adm
 	if writeErr != nil {
 		log.Printf("Could not write response: %v", writeErr)
 	}
-	log.Print("...Webhook request ends")
+	log.Tracef("...Webhook request ends")
 }
 
 // admitFuncHandler takes an admitFunc and wraps it into a http.Handler by means of calling serveAdmitFunc.

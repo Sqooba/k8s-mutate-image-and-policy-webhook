@@ -1,6 +1,16 @@
 k8s-mutate-image-and-policy
 ====
 
+# Version v3.4.0 -- unreleased
+
+## Enhancement
+
+- Allow to append ImagePullSecret to an existing list via the env var IMAGE_PULL_SECRET_APPEND="true"
+
+## Other
+
+- Golang v1.19, k8s version bump
+
 # Version v3.3.1 -- 23.11.2021
 
 ## Other

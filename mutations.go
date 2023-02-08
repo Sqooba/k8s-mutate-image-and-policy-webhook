@@ -121,17 +121,34 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 	}
 
 	if wh.imagePullSecret != "" {
-
-		op := "add"
-		if pod.Spec.ImagePullSecrets != nil {
-			op = "replace"
+		if pod.Spec.ImagePullSecrets == nil {
+			patches = append(patches, patchOperation{
+				Op:    "add",
+				Path:  "/spec/imagePullSecrets",
+				Value: []map[string]string{{"name": wh.imagePullSecret}},
+			})
+		} else if wh.appendImagePullSecret {
+			imagePullSecretsAlreadyExist := false
+			for _, i := range pod.Spec.ImagePullSecrets {
+				if i.Name == wh.imagePullSecret {
+					imagePullSecretsAlreadyExist = true
+					break
+				}
+			}
+			if !imagePullSecretsAlreadyExist {
+				patches = append(patches, patchOperation{
+					Op:    "add",
+					Path:  fmt.Sprintf("/spec/imagePullSecrets/%d", len(pod.Spec.ImagePullSecrets)),
+					Value: []map[string]string{{"name": wh.imagePullSecret}},
+				})
+			}
+		} else {
+			patches = append(patches, patchOperation{
+				Op:    "replace",
+				Path:  "/spec/imagePullSecrets",
+				Value: []map[string]string{{"name": wh.imagePullSecret}},
+			})
 		}
-
-		patches = append(patches, patchOperation{
-			Op:    op,
-			Path:  "/spec/imagePullSecrets",
-			Value: []map[string]string{{"name": wh.imagePullSecret}},
-		})
 	}
 
 	log.Debugf("Patch applied: %v", patches)

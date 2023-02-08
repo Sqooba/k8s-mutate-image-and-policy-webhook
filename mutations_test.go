@@ -510,6 +510,122 @@ func TestImagePullSecretPresent(t *testing.T) {
 	assert.Equal(t, []map[string]string{{"name": "random-pull-secret"}}, patches[0].Value)
 }
 
+func TestImagePullSecretWithAlreadyExistingSecret(t *testing.T) {
+	logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret: "already-existing-pull-secret",
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{
+				{Name: "already-existing-pull-secret"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "replace", patches[0].Op)
+	assert.Equal(t, "/spec/imagePullSecrets", patches[0].Path)
+	assert.Equal(t, []map[string]string{{"name": "already-existing-pull-secret"}}, patches[0].Value)
+}
+
+func TestImagePullSecretWithAppendAndEmptySecret(t *testing.T) {
+	logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "random-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "add", patches[0].Op)
+	assert.Equal(t, "/spec/imagePullSecrets/0", patches[0].Path)
+	assert.Equal(t, []map[string]string{{"name": "random-pull-secret"}}, patches[0].Value)
+}
+
+func TestImagePullSecretWithAppendAndNoneExistingSecret(t *testing.T) {
+	logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "random-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "add", patches[0].Op)
+	assert.Equal(t, "/spec/imagePullSecrets", patches[0].Path)
+	assert.Equal(t, []map[string]string{{"name": "random-pull-secret"}}, patches[0].Value)
+}
+
+func TestImagePullSecretWithAppendAndAlreadyExistingSecret(t *testing.T) {
+	logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "already-existing-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{
+				{Name: "already-existing-pull-secret"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(patches))
+}
+
+func TestImagePullSecretAppendToExistingSecret(t *testing.T) {
+	logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "a-new-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{
+				{Name: "already-existing-pull-secret"},
+				{Name: "another-already-existing-pull-secret"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "add", patches[0].Op)
+	assert.Equal(t, "/spec/imagePullSecrets/2", patches[0].Path)
+	assert.Equal(t, []map[string]string{{"name": "a-new-pull-secret"}}, patches[0].Value)
+}
+
 func TestMissingPullPolicy(t *testing.T) {
 
 	wh := mutationWH{
