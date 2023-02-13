@@ -10,6 +10,7 @@ k8s-mutate-image-and-policy
 ## Change
 
 - Avoid mutating `ImagePullSecrets` when the expected value is already present.
+- golangci-lint'ing, goimports'ing and gofmt'ing
 
 ## Other
 
