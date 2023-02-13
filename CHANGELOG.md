@@ -5,7 +5,11 @@ k8s-mutate-image-and-policy
 
 ## Enhancement
 
-- Allow to append ImagePullSecret to an existing list via the env var IMAGE_PULL_SECRET_APPEND="true"
+- Allow to append ImagePullSecret to an existing list via new flag `IMAGE_PULL_SECRET_APPEND`
+
+## Change
+
+- Avoid mutating `ImagePullSecrets` when the expected value is already present.
 
 ## Other
 

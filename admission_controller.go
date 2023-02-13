@@ -160,8 +160,10 @@ func (wh *mutationWH) serveAdmitFunc(w http.ResponseWriter, r *http.Request, adm
 		w.Header().Add("Content-Type", jsonContentType)
 		buf := new(bytes.Buffer)
 		writeErr = encoder.Encode(object, buf)
-		log.Tracef("Serialized response: %s", string(buf.Bytes()))
-		_, writeErr = w.Write(buf.Bytes())
+		if writeErr == nil {
+			log.Tracef("Serialized response: %s", buf.String())
+			_, writeErr = w.Write(buf.Bytes())
+		}
 	}
 
 	if writeErr != nil {

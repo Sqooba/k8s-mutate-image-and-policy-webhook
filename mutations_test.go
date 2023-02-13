@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/sqooba/go-common/logging"
 	"testing"
+
+	"github.com/sqooba/go-common/logging"
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -422,7 +423,7 @@ func TestImageExternal(t *testing.T) {
 }
 
 func TestImageExternalPathPrefixShortImage(t *testing.T) {
-	logging.SetLogLevel(log, "trace")
+	_ = logging.SetLogLevel(log, "trace")
 
 	wh := mutationWH{
 		registry: "docker.sqooba.io/public-docker-virtual",
@@ -445,7 +446,7 @@ func TestImageExternalPathPrefixShortImage(t *testing.T) {
 }
 
 func TestImagePullSecretNotPresent(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret: "random-pull-secret",
@@ -465,7 +466,7 @@ func TestImagePullSecretNotPresent(t *testing.T) {
 }
 
 func TestImagePullSecretEmpty(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret: "random-pull-secret",
@@ -487,7 +488,7 @@ func TestImagePullSecretEmpty(t *testing.T) {
 }
 
 func TestImagePullSecretPresent(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret: "random-pull-secret",
@@ -511,7 +512,7 @@ func TestImagePullSecretPresent(t *testing.T) {
 }
 
 func TestImagePullSecretWithAlreadyExistingSecret(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret: "already-existing-pull-secret",
@@ -528,14 +529,14 @@ func TestImagePullSecretWithAlreadyExistingSecret(t *testing.T) {
 
 	patches, err := wh.applyMutationOnPod(pod)
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(patches))
-	assert.Equal(t, "replace", patches[0].Op)
-	assert.Equal(t, "/spec/imagePullSecrets", patches[0].Path)
-	assert.Equal(t, []map[string]string{{"name": "already-existing-pull-secret"}}, patches[0].Value)
+	assert.Equal(t, 0, len(patches))
+	//assert.Equal(t, "replace", patches[0].Op)
+	//assert.Equal(t, "/spec/imagePullSecrets", patches[0].Path)
+	//assert.Equal(t, []map[string]string{{"name": "already-existing-pull-secret"}}, patches[0].Value)
 }
 
 func TestImagePullSecretWithAppendAndEmptySecret(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret:       "random-pull-secret",
@@ -558,7 +559,7 @@ func TestImagePullSecretWithAppendAndEmptySecret(t *testing.T) {
 }
 
 func TestImagePullSecretWithAppendAndNoneExistingSecret(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret:       "random-pull-secret",
@@ -579,7 +580,7 @@ func TestImagePullSecretWithAppendAndNoneExistingSecret(t *testing.T) {
 }
 
 func TestImagePullSecretWithAppendAndAlreadyExistingSecret(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret:       "already-existing-pull-secret",
@@ -601,7 +602,7 @@ func TestImagePullSecretWithAppendAndAlreadyExistingSecret(t *testing.T) {
 }
 
 func TestImagePullSecretAppendToExistingSecret(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret:       "a-new-pull-secret",

@@ -143,11 +143,13 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 				})
 			}
 		} else {
-			patches = append(patches, patchOperation{
-				Op:    "replace",
-				Path:  "/spec/imagePullSecrets",
-				Value: []map[string]string{{"name": wh.imagePullSecret}},
-			})
+			if !(len(pod.Spec.ImagePullSecrets) == 1 && pod.Spec.ImagePullSecrets[0].Name == wh.imagePullSecret) {
+				patches = append(patches, patchOperation{
+					Op:    "replace",
+					Path:  "/spec/imagePullSecrets",
+					Value: []map[string]string{{"name": wh.imagePullSecret}},
+				})
+			}
 		}
 	}
 

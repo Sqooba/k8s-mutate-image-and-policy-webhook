@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
+	"net/http"
+
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sqooba/go-common/logging"
 	"github.com/sqooba/go-common/version"
-	"net/http"
 )
 
 type envConfig struct {
@@ -23,8 +24,7 @@ type envConfig struct {
 }
 
 var (
-	setLogLevel = flag.String("set-log-level", "", "Change log level. Possible values are trace,debug,info,warn,error,fatal,panic")
-	log         = logging.NewLogger()
+	log = logging.NewLogger()
 )
 
 type mutationWH struct {
