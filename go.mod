@@ -1,6 +1,6 @@
 module github.com/sqooba/k8s-mutate-image-and-policy
 
-go 1.19
+go 1.20
 
 require (
 	github.com/kelseyhightower/envconfig v1.4.0

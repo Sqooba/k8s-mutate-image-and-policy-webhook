@@ -92,11 +92,11 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 				if c.ImagePullPolicy == "" {
 					op = "add"
 				}
-				if c.ImagePullPolicy != corev1.PullAlways {
+				if wh.imagePullPolicyToForce != string(c.ImagePullPolicy) {
 					patches = append(patches, patchOperation{
 						Op:    op,
 						Path:  fmt.Sprintf("/spec/initContainers/%d/imagePullPolicy", i),
-						Value: corev1.PullAlways,
+						Value: wh.imagePullPolicyToForce,
 					})
 				}
 			}
@@ -223,4 +223,17 @@ func containsAnyRegistry(image string, registries []string) bool {
 		}
 	}
 	return false
+}
+
+func isPullPolicyValid(policy string) bool {
+	switch policy {
+	case string(corev1.PullAlways):
+		return true
+	case string(corev1.PullIfNotPresent):
+		return true
+	case string(corev1.PullNever):
+		return true
+	default:
+		return false
+	}
 }

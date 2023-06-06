@@ -6,6 +6,8 @@ k8s-mutate-image-and-policy
 ## Enhancement
 
 - Allow to append ImagePullSecret to an existing list via new flag `IMAGE_PULL_SECRET_APPEND`
+- Upgrade to Goland 1.20
+- Allow to specify which pull policy (Always, IfNotPresent or Never) to force, via new flag `IMAGE_PULL_POLICY_TO_FORCE`
 
 ## Change
 
