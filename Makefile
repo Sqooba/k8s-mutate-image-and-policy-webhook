@@ -1,4 +1,4 @@
-VERSION=v3.3.0
+VERSION=v3.4.0
 GOOS=linux
 GOCMD=go
 GOBUILD=$(GOCMD) build
@@ -54,7 +54,5 @@ release:
 		--build-arg VERSION=$(VERSION) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
 		-t ${DOCKER_REGISTRY}${GO_PACKAGE}:$(VERSION) \
-		-t ${DOCKER_REGISTRY}${GO_PACKAGE}:$(VERSION_MAJOR).$(VERSION_MINOR) \
-		-t ${DOCKER_REGISTRY}${GO_PACKAGE}:$(VERSION_MAJOR) \
 		--push \
 		.

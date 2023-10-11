@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/sqooba/go-common/logging"
 	"testing"
+
+	"github.com/sqooba/go-common/logging"
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -422,7 +423,7 @@ func TestImageExternal(t *testing.T) {
 }
 
 func TestImageExternalPathPrefixShortImage(t *testing.T) {
-	logging.SetLogLevel(log, "trace")
+	_ = logging.SetLogLevel(log, "trace")
 
 	wh := mutationWH{
 		registry: "docker.sqooba.io/public-docker-virtual",
@@ -445,7 +446,7 @@ func TestImageExternalPathPrefixShortImage(t *testing.T) {
 }
 
 func TestImagePullSecretNotPresent(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret: "random-pull-secret",
@@ -465,7 +466,7 @@ func TestImagePullSecretNotPresent(t *testing.T) {
 }
 
 func TestImagePullSecretEmpty(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret: "random-pull-secret",
@@ -487,7 +488,7 @@ func TestImagePullSecretEmpty(t *testing.T) {
 }
 
 func TestImagePullSecretPresent(t *testing.T) {
-	logging.SetLogLevel(log, "debug")
+	_ = logging.SetLogLevel(log, "debug")
 
 	wh := mutationWH{
 		imagePullSecret: "random-pull-secret",
@@ -510,10 +511,127 @@ func TestImagePullSecretPresent(t *testing.T) {
 	assert.Equal(t, []map[string]string{{"name": "random-pull-secret"}}, patches[0].Value)
 }
 
+func TestImagePullSecretWithAlreadyExistingSecret(t *testing.T) {
+	_ = logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret: "already-existing-pull-secret",
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{
+				{Name: "already-existing-pull-secret"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(patches))
+	//assert.Equal(t, "replace", patches[0].Op)
+	//assert.Equal(t, "/spec/imagePullSecrets", patches[0].Path)
+	//assert.Equal(t, []map[string]string{{"name": "already-existing-pull-secret"}}, patches[0].Value)
+}
+
+func TestImagePullSecretWithAppendAndEmptySecret(t *testing.T) {
+	_ = logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "random-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "add", patches[0].Op)
+	assert.Equal(t, "/spec/imagePullSecrets/0", patches[0].Path)
+	assert.Equal(t, []map[string]string{{"name": "random-pull-secret"}}, patches[0].Value)
+}
+
+func TestImagePullSecretWithAppendAndNoneExistingSecret(t *testing.T) {
+	_ = logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "random-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "add", patches[0].Op)
+	assert.Equal(t, "/spec/imagePullSecrets", patches[0].Path)
+	assert.Equal(t, []map[string]string{{"name": "random-pull-secret"}}, patches[0].Value)
+}
+
+func TestImagePullSecretWithAppendAndAlreadyExistingSecret(t *testing.T) {
+	_ = logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "already-existing-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{
+				{Name: "already-existing-pull-secret"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, len(patches))
+}
+
+func TestImagePullSecretAppendToExistingSecret(t *testing.T) {
+	_ = logging.SetLogLevel(log, "debug")
+
+	wh := mutationWH{
+		imagePullSecret:       "a-new-pull-secret",
+		appendImagePullSecret: true,
+	}
+
+	pod := corev1.Pod{
+
+		Spec: corev1.PodSpec{
+			ImagePullSecrets: []corev1.LocalObjectReference{
+				{Name: "already-existing-pull-secret"},
+				{Name: "another-already-existing-pull-secret"},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, "add", patches[0].Op)
+	assert.Equal(t, "/spec/imagePullSecrets/2", patches[0].Path)
+	assert.Equal(t, []map[string]string{{"name": "a-new-pull-secret"}}, patches[0].Value)
+}
+
 func TestMissingPullPolicy(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -536,7 +654,8 @@ func TestMissingPullPolicy(t *testing.T) {
 func TestNotAlwaysPullPolicy(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -559,7 +678,8 @@ func TestNotAlwaysPullPolicy(t *testing.T) {
 func TestAlwaysPullPolicy(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -576,10 +696,34 @@ func TestAlwaysPullPolicy(t *testing.T) {
 	assert.Equal(t, 0, len(patches))
 }
 
+func TestImagePullPolicyToForce(t *testing.T) {
+
+	wh := mutationWH{
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullIfNotPresent,
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					ImagePullPolicy: corev1.PullNever,
+				},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, corev1.PullIfNotPresent, patches[0].Value)
+}
+
 func TestMultipleContainers(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -610,7 +754,8 @@ func TestMultipleContainers(t *testing.T) {
 func TestInitContainers(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{

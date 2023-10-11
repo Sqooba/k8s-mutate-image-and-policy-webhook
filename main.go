@@ -2,37 +2,42 @@ package main
 
 import (
 	"flag"
+	corev1 "k8s.io/api/core/v1"
+	"net/http"
+
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sqooba/go-common/logging"
 	"github.com/sqooba/go-common/version"
-	"net/http"
 )
 
 type envConfig struct {
-	TLSCertFile          string   `envconfig:"TLS_CERT_FILE" default:"/run/secrets/tls/webhook-server-tls.crt"`
-	TLSKeyFile           string   `envconfig:"TLS_KEY_FILE" default:"/run/secrets/tls/webhook-server-tls.key"`
-	Port                 string   `envconfig:"PORT" default:"8443"`
-	LogLevel             string   `envconfig:"LOG_LEVEL" default:"info"`
-	Registry             string   `envconfig:"REGISTRY"`
-	ImagePullSecret      string   `envconfig:"IMAGE_PULL_SECRET"`
-	ForceImagePullPolicy bool     `envconfig:"FORCE_IMAGE_PULL_POLICY"`
-	DefaultStorageClass  string   `envconfig:"DEFAULT_STORAGE_CLASS"`
-	ExcludeNamespaces    []string `envconfig:"EXCLUDE_NAMESPACES"`
-	IgnoredRegistries    []string `envconfig:"IGNORED_REGISTRIES"`
+	TLSCertFile            string   `envconfig:"TLS_CERT_FILE" default:"/run/secrets/tls/webhook-server-tls.crt"`
+	TLSKeyFile             string   `envconfig:"TLS_KEY_FILE" default:"/run/secrets/tls/webhook-server-tls.key"`
+	Port                   string   `envconfig:"PORT" default:"8443"`
+	LogLevel               string   `envconfig:"LOG_LEVEL" default:"info"`
+	Registry               string   `envconfig:"REGISTRY"`
+	ImagePullSecret        string   `envconfig:"IMAGE_PULL_SECRET"`
+	AppendImagePullSecret  bool     `envconfig:"IMAGE_PULL_SECRET_APPEND" default:"false"`
+	ForceImagePullPolicy   bool     `envconfig:"FORCE_IMAGE_PULL_POLICY"`
+	ImagePullPolicyToForce string   `envconfig:"IMAGE_PULL_POLICY_TO_FORCE" default:"Always"`
+	DefaultStorageClass    string   `envconfig:"DEFAULT_STORAGE_CLASS"`
+	ExcludeNamespaces      []string `envconfig:"EXCLUDE_NAMESPACES"`
+	IgnoredRegistries      []string `envconfig:"IGNORED_REGISTRIES"`
 }
 
 var (
-	setLogLevel = flag.String("set-log-level", "", "Change log level. Possible values are trace,debug,info,warn,error,fatal,panic")
-	log         = logging.NewLogger()
+	log = logging.NewLogger()
 )
 
 type mutationWH struct {
-	registry             string
-	imagePullSecret      string
-	forceImagePullPolicy bool
-	defaultStorageClass  string
-	excludedNamespaces   []string
-	ignoredRegistries    []string
+	registry               string
+	imagePullSecret        string
+	appendImagePullSecret  bool
+	forceImagePullPolicy   bool
+	imagePullPolicyToForce corev1.PullPolicy
+	defaultStorageClass    string
+	excludedNamespaces     []string
+	ignoredRegistries      []string
 }
 
 func main() {
@@ -54,13 +59,21 @@ func main() {
 		log.Fatalf("Logging level %s do not seem to be right. Err = %v", env.LogLevel, err)
 	}
 
+	// Validate pull policy
+	pullPolicyValid, pullPolicyToForce := isPullPolicyValid(env.ImagePullPolicyToForce)
+	if !pullPolicyValid {
+		log.Fatalf("Pull policy %s is not valid. Fix IMAGE_PULL_POLICY_TO_FORCE and retry", env.ImagePullPolicyToForce)
+	}
+
 	wh := mutationWH{
-		registry:             env.Registry,
-		imagePullSecret:      env.ImagePullSecret,
-		forceImagePullPolicy: env.ForceImagePullPolicy,
-		defaultStorageClass:  env.DefaultStorageClass,
-		excludedNamespaces:   env.ExcludeNamespaces,
-		ignoredRegistries:    env.IgnoredRegistries,
+		registry:               env.Registry,
+		imagePullSecret:        env.ImagePullSecret,
+		appendImagePullSecret:  env.AppendImagePullSecret,
+		forceImagePullPolicy:   env.ForceImagePullPolicy,
+		imagePullPolicyToForce: pullPolicyToForce,
+		defaultStorageClass:    env.DefaultStorageClass,
+		excludedNamespaces:     env.ExcludeNamespaces,
+		ignoredRegistries:      env.IgnoredRegistries,
 	}
 
 	mux := http.NewServeMux()

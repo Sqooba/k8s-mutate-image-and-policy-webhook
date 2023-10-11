@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/sqooba/go-common/healthchecks"
 	"net/http"
+
+	"github.com/sqooba/go-common/healthchecks"
 )
 
 // routes define all the routes of the http multiplexer

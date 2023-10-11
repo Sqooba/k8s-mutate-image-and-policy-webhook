@@ -92,11 +92,11 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 				if c.ImagePullPolicy == "" {
 					op = "add"
 				}
-				if c.ImagePullPolicy != corev1.PullAlways {
+				if wh.imagePullPolicyToForce != c.ImagePullPolicy {
 					patches = append(patches, patchOperation{
 						Op:    op,
 						Path:  fmt.Sprintf("/spec/initContainers/%d/imagePullPolicy", i),
-						Value: corev1.PullAlways,
+						Value: wh.imagePullPolicyToForce,
 					})
 				}
 			}
@@ -105,7 +105,7 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 		if pod.Spec.Containers != nil {
 			for i, c := range pod.Spec.Containers {
 				log.Tracef("/spec/containers/%d/imagePullPolicy = %s", i, c.ImagePullPolicy)
-				if c.ImagePullPolicy != corev1.PullAlways {
+				if c.ImagePullPolicy != wh.imagePullPolicyToForce {
 					op := "replace"
 					if c.ImagePullPolicy == "" {
 						op = "add"
@@ -113,7 +113,7 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 					patches = append(patches, patchOperation{
 						Op:    op,
 						Path:  fmt.Sprintf("/spec/containers/%d/imagePullPolicy", i),
-						Value: corev1.PullAlways,
+						Value: wh.imagePullPolicyToForce,
 					})
 				}
 			}
@@ -121,17 +121,43 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 	}
 
 	if wh.imagePullSecret != "" {
-
-		op := "add"
-		if pod.Spec.ImagePullSecrets != nil {
-			op = "replace"
+		// if there are no existing pull secrets, append or replace is the same operation.
+		if pod.Spec.ImagePullSecrets == nil {
+			patches = append(patches, patchOperation{
+				Op:    "add",
+				Path:  "/spec/imagePullSecrets",
+				Value: []map[string]string{{"name": wh.imagePullSecret}},
+			})
+		} else {
+			if wh.appendImagePullSecret {
+				// in the append branch,
+				// in case of existing secrets in the pod, we check if the secret does not exist and we append it to the list
+				imagePullSecretsAlreadyExist := false
+				for _, i := range pod.Spec.ImagePullSecrets {
+					if i.Name == wh.imagePullSecret {
+						imagePullSecretsAlreadyExist = true
+						break
+					}
+				}
+				if !imagePullSecretsAlreadyExist {
+					patches = append(patches, patchOperation{
+						Op:    "add",
+						Path:  fmt.Sprintf("/spec/imagePullSecrets/%d", len(pod.Spec.ImagePullSecrets)),
+						Value: []map[string]string{{"name": wh.imagePullSecret}},
+					})
+				}
+			} else {
+				// in the replace branch,
+				// if the secret is not the one to set, we replace the existing secret(s)
+				if !(len(pod.Spec.ImagePullSecrets) == 1 && pod.Spec.ImagePullSecrets[0].Name == wh.imagePullSecret) {
+					patches = append(patches, patchOperation{
+						Op:    "replace",
+						Path:  "/spec/imagePullSecrets",
+						Value: []map[string]string{{"name": wh.imagePullSecret}},
+					})
+				}
+			}
 		}
-
-		patches = append(patches, patchOperation{
-			Op:    op,
-			Path:  "/spec/imagePullSecrets",
-			Value: []map[string]string{{"name": wh.imagePullSecret}},
-		})
 	}
 
 	log.Debugf("Patch applied: %v", patches)
@@ -204,4 +230,17 @@ func containsAnyRegistry(image string, registries []string) bool {
 		}
 	}
 	return false
+}
+
+func isPullPolicyValid(policy string) (bool, corev1.PullPolicy) {
+	switch policy {
+	case string(corev1.PullAlways):
+		return true, corev1.PullAlways
+	case string(corev1.PullIfNotPresent):
+		return true, corev1.PullIfNotPresent
+	case string(corev1.PullNever):
+		return true, corev1.PullNever
+	default:
+		return false, corev1.PullAlways
+	}
 }
