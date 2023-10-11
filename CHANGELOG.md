@@ -1,13 +1,13 @@
 k8s-mutate-image-and-policy
 ====
 
-# Version v3.4.0 -- unreleased
+# Version v3.4.0 -- 11.10.2023
 
 ## Enhancement
 
 - Allow to append ImagePullSecret to an existing list via new flag `IMAGE_PULL_SECRET_APPEND`
-- Upgrade to Goland 1.20
 - Allow to specify which pull policy (Always, IfNotPresent or Never) to force, via new flag `IMAGE_PULL_POLICY_TO_FORCE`
+- Augment test coverage
 
 ## Change
 
@@ -16,7 +16,7 @@ k8s-mutate-image-and-policy
 
 ## Other
 
-- Golang v1.19, k8s version bump
+- Golang v1.20, k8s version bump
 
 # Version v3.3.1 -- 23.11.2021
 
