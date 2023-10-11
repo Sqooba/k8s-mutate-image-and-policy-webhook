@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	corev1 "k8s.io/api/core/v1"
 	"net/http"
 
 	"github.com/kelseyhightower/envconfig"
@@ -33,7 +34,7 @@ type mutationWH struct {
 	imagePullSecret        string
 	appendImagePullSecret  bool
 	forceImagePullPolicy   bool
-	imagePullPolicyToForce string
+	imagePullPolicyToForce corev1.PullPolicy
 	defaultStorageClass    string
 	excludedNamespaces     []string
 	ignoredRegistries      []string
@@ -59,7 +60,7 @@ func main() {
 	}
 
 	// Validate pull policy
-	pullPolicyValid := isPullPolicyValid(env.ImagePullPolicyToForce)
+	pullPolicyValid, pullPolicyToForce := isPullPolicyValid(env.ImagePullPolicyToForce)
 	if !pullPolicyValid {
 		log.Fatalf("Pull policy %s is not valid. Fix IMAGE_PULL_POLICY_TO_FORCE and retry", env.ImagePullPolicyToForce)
 	}
@@ -69,7 +70,7 @@ func main() {
 		imagePullSecret:        env.ImagePullSecret,
 		appendImagePullSecret:  env.AppendImagePullSecret,
 		forceImagePullPolicy:   env.ForceImagePullPolicy,
-		imagePullPolicyToForce: env.ImagePullPolicyToForce,
+		imagePullPolicyToForce: pullPolicyToForce,
 		defaultStorageClass:    env.DefaultStorageClass,
 		excludedNamespaces:     env.ExcludeNamespaces,
 		ignoredRegistries:      env.IgnoredRegistries,

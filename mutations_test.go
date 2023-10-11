@@ -630,7 +630,8 @@ func TestImagePullSecretAppendToExistingSecret(t *testing.T) {
 func TestMissingPullPolicy(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -653,7 +654,8 @@ func TestMissingPullPolicy(t *testing.T) {
 func TestNotAlwaysPullPolicy(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -676,7 +678,8 @@ func TestNotAlwaysPullPolicy(t *testing.T) {
 func TestAlwaysPullPolicy(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -693,10 +696,34 @@ func TestAlwaysPullPolicy(t *testing.T) {
 	assert.Equal(t, 0, len(patches))
 }
 
+func TestImagePullPolicyToForce(t *testing.T) {
+
+	wh := mutationWH{
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullIfNotPresent,
+	}
+
+	pod := corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					ImagePullPolicy: corev1.PullNever,
+				},
+			},
+		},
+	}
+
+	patches, err := wh.applyMutationOnPod(pod)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(patches))
+	assert.Equal(t, corev1.PullIfNotPresent, patches[0].Value)
+}
+
 func TestMultipleContainers(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
@@ -727,7 +754,8 @@ func TestMultipleContainers(t *testing.T) {
 func TestInitContainers(t *testing.T) {
 
 	wh := mutationWH{
-		forceImagePullPolicy: true,
+		forceImagePullPolicy:   true,
+		imagePullPolicyToForce: corev1.PullAlways,
 	}
 
 	pod := corev1.Pod{
