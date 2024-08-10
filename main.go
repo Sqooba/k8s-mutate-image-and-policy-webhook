@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	corev1 "k8s.io/api/core/v1"
 	"net/http"
+
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sqooba/go-common/logging"
@@ -22,6 +23,7 @@ type envConfig struct {
 	ImagePullPolicyToForce string   `envconfig:"IMAGE_PULL_POLICY_TO_FORCE" default:"Always"`
 	DefaultStorageClass    string   `envconfig:"DEFAULT_STORAGE_CLASS"`
 	ExcludeNamespaces      []string `envconfig:"EXCLUDE_NAMESPACES"`
+	IncludeNamespaces      []string `envconfig:"INCLUDE_NAMESPACES"`
 	IgnoredRegistries      []string `envconfig:"IGNORED_REGISTRIES"`
 }
 
@@ -37,6 +39,7 @@ type mutationWH struct {
 	imagePullPolicyToForce corev1.PullPolicy
 	defaultStorageClass    string
 	excludedNamespaces     []string
+	includedNamespaces     []string
 	ignoredRegistries      []string
 }
 
@@ -73,6 +76,7 @@ func main() {
 		imagePullPolicyToForce: pullPolicyToForce,
 		defaultStorageClass:    env.DefaultStorageClass,
 		excludedNamespaces:     env.ExcludeNamespaces,
+		includedNamespaces:     env.IncludeNamespaces,
 		ignoredRegistries:      env.IgnoredRegistries,
 	}
 
