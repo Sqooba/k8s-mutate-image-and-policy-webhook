@@ -6,7 +6,7 @@ k8s-mutate-image-and-policy
 
 ## Added
 
-- New env var `INCLUDE_NAMESPACES` to explicitely include specific namespaces. Default to empty, meaning all the namespaces are included (backward compatible behavior)
+- New env var `INCLUDE_NAMESPACES` to explicitly include specific namespaces. Default to empty, meaning all the namespaces are included (backward compatible behavior)
 
 ## Change
 
