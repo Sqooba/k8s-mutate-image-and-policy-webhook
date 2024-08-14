@@ -1,6 +1,21 @@
 k8s-mutate-image-and-policy
 ====
 
+
+# Version v3.5.0 -- 2024.08.10
+
+## Added
+
+- New env var `INCLUDE_NAMESPACES` to explicitly include specific namespaces. Default to empty, meaning all the namespaces are included (backward compatible behavior)
+
+## Change
+
+- Golang version and dependencies bump
+
+## Fixed
+
+- Fix append imagePullSecret when some imagePullSecrets are already present
+
 # Version v3.4.0 -- 11.10.2023
 
 ## Enhancement

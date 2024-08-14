@@ -143,7 +143,7 @@ func (wh *mutationWH) applyMutationOnPod(pod corev1.Pod) ([]patchOperation, erro
 					patches = append(patches, patchOperation{
 						Op:    "add",
 						Path:  fmt.Sprintf("/spec/imagePullSecrets/%d", len(pod.Spec.ImagePullSecrets)),
-						Value: []map[string]string{{"name": wh.imagePullSecret}},
+						Value: map[string]string{"name": wh.imagePullSecret},
 					})
 				}
 			} else {

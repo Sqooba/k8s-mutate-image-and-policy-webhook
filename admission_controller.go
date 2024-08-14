@@ -56,6 +56,20 @@ func isExcludedNamespace(ns string, excludedNamespaces []string) bool {
 	return false
 }
 
+// isIncludedNamespace checks if the given namespace is a included via the configuration.
+// An empty includedNamespaces means all the namespaces are included.
+func isIncludedNamespace(ns string, includedNamespaces []string) bool {
+	if len(includedNamespaces) == 0 {
+		return true
+	}
+	for _, a := range includedNamespaces {
+		if a == ns {
+			return true
+		}
+	}
+	return false
+}
+
 // doServeAdmitFunc parses the HTTP request for an admission controller webhook, and -- in case of a well-formed
 // request -- delegates the admission control logic to the given admitFunc. The response body is then returned as raw
 // bytes.
@@ -109,12 +123,13 @@ func (wh *mutationWH) doServeAdmitFunc(w http.ResponseWriter, r *http.Request, a
 
 		var patchOps []patchOperation
 
-		// Apply the admit() function only for non-excluded namespaces. For objects excluded, return
-		// an empty set of patch operations.
-		if !isExcludedNamespace(admissionReviewReq.Request.Namespace, wh.excludedNamespaces) {
+		// Apply the admit() function only non-excluded and included (if not empty) namespaces.
+		// For objects excluded, return an empty set of patch operations.
+		if !isExcludedNamespace(admissionReviewReq.Request.Namespace, wh.excludedNamespaces) &&
+			isIncludedNamespace(admissionReviewReq.Request.Namespace, wh.includedNamespaces) {
 			patchOps, err = admit(admissionReviewReq.Request)
 		} else {
-			log.Debugf("Namespace is excluded")
+			log.Debugf("Namespace is not included or excluded")
 		}
 
 		if err != nil {
