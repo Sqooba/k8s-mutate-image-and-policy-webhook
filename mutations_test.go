@@ -624,7 +624,7 @@ func TestImagePullSecretAppendToExistingSecret(t *testing.T) {
 	assert.Equal(t, 1, len(patches))
 	assert.Equal(t, "add", patches[0].Op)
 	assert.Equal(t, "/spec/imagePullSecrets/2", patches[0].Path)
-	assert.Equal(t, []map[string]string{{"name": "a-new-pull-secret"}}, patches[0].Value)
+	assert.Equal(t, map[string]string{"name": "a-new-pull-secret"}, patches[0].Value)
 }
 
 func TestMissingPullPolicy(t *testing.T) {

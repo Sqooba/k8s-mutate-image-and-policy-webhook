@@ -12,6 +12,10 @@ k8s-mutate-image-and-policy
 
 - Golang version and dependencies bump
 
+## Fixed
+
+- Fix append imagePullSecret when some imagePullSecrets are already present
+
 # Version v3.4.0 -- 11.10.2023
 
 ## Enhancement
